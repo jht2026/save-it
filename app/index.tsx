@@ -123,13 +123,17 @@ export default function Index() {
     <View style={s.root}>
       <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
 
-        {/* Header */}
         <View style={s.header}>
           <Text style={s.wordmark}>save<Text style={s.dot}>.</Text>it</Text>
-          <TextInput style={s.search} placeholder="Søg..." value={search} onChangeText={setSearch} />
+          <TextInput
+            style={s.search}
+            placeholder="Søg..."
+            placeholderTextColor="#888"
+            value={search}
+            onChangeText={setSearch}
+          />
         </View>
 
-        {/* Kategorier */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.catScroll} contentContainerStyle={s.catRowContent}>
           {Object.entries(cats).map(([k, v]) => (
             <TouchableOpacity key={k}
@@ -141,7 +145,6 @@ export default function Index() {
           ))}
         </ScrollView>
 
-        {/* Underkategorier */}
         {activeCat !== 'alle' && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.subScroll} contentContainerStyle={s.subContent}>
             <TouchableOpacity style={[s.subPill, activeSub === 'alle' && s.subPillActive]} onPress={() => setActiveSub('alle')}>
@@ -167,15 +170,14 @@ export default function Index() {
           </ScrollView>
         )}
 
-        {/* Links */}
         {filtered.length === 0
           ? <Text style={s.empty}>Ingen links endnu</Text>
           : filtered.map(l => (
             <View key={l.id} style={s.card}>
               {editingId === l.id ? (
                 <View style={s.editBox}>
-                  <TextInput style={s.editInput} value={editTitle} onChangeText={setEditTitle} placeholder="Titel" />
-                  <TextInput style={s.editInput} value={editNote} onChangeText={setEditNote} placeholder="Note" />
+                  <TextInput style={s.editInput} value={editTitle} onChangeText={setEditTitle} placeholder="Titel" placeholderTextColor="#888" />
+                  <TextInput style={s.editInput} value={editNote} onChangeText={setEditNote} placeholder="Note" placeholderTextColor="#888" />
                   <View style={s.editActions}>
                     <TouchableOpacity style={s.saveBtn} onPress={saveEdit}>
                       <Text style={s.saveBtnText}>Gem ændringer</Text>
@@ -217,18 +219,36 @@ export default function Index() {
           ))
         }
 
-        {/* Input */}
         <View style={s.inputBox}>
           <View style={s.inputRow}>
-            <TextInput style={[s.input, { flex: 1 }]} placeholder="Indsæt link..." value={url}
-              onChangeText={handleUrlChange} autoCapitalize="none" keyboardType="url" />
+            <TextInput
+              style={[s.input, { flex: 1 }]}
+              placeholder="Indsæt link..."
+              value={url}
+              onChangeText={handleUrlChange}
+              autoCapitalize="none"
+              keyboardType="url"
+              placeholderTextColor="#888"
+            />
             <TouchableOpacity style={s.gemBtn} onPress={handleAdd}>
               <Text style={s.gemBtnText}>Gem</Text>
             </TouchableOpacity>
           </View>
           <View style={s.inputRow}>
-            <TextInput style={[s.input, { flex: 1 }]} placeholder={fetchStatus || 'Titel...'} value={title} onChangeText={setTitle} />
-            <TextInput style={[s.input, { flex: 1 }]} placeholder="Note (valgfri)" value={note} onChangeText={setNote} />
+            <TextInput
+              style={[s.input, { flex: 1 }]}
+              placeholder={fetchStatus || 'Titel...'}
+              value={title}
+              onChangeText={setTitle}
+              placeholderTextColor="#888"
+            />
+            <TextInput
+              style={[s.input, { flex: 1 }]}
+              placeholder="Note (valgfri)"
+              value={note}
+              onChangeText={setNote}
+              placeholderTextColor="#888"
+            />
           </View>
         </View>
 
@@ -248,7 +268,7 @@ const s = StyleSheet.create({
   search: { height: 36, backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 14, fontSize: 14, color: T.ink },
   catScroll: { maxHeight: 80 },
   catRowContent: { paddingHorizontal: 16, gap: 8, alignItems: 'center', paddingVertical: 8, flex: 1 },
-catTile: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12, backgroundColor: '#fff' },
+  catTile: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12, backgroundColor: '#fff' },
   catLabel: { fontSize: 11, fontWeight: '500', color: T.ink3, marginTop: 3 },
   subScroll: { maxHeight: 44 },
   subContent: { paddingHorizontal: 16, gap: 6, alignItems: 'center' },
@@ -278,7 +298,7 @@ catTile: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12,
   empty: { textAlign: 'center', padding: 40, color: T.ink3, fontSize: 14 },
   inputBox: { borderTopWidth: 1, borderTopColor: T.border, padding: 16, paddingBottom: 32, gap: 8, backgroundColor: '#fff', marginTop: 16 },
   inputRow: { flexDirection: 'row', gap: 8 },
-  input: { height: 42, borderWidth: 1.5, borderColor: T.sand, borderRadius: 10, paddingHorizontal: 12, fontSize: 15, backgroundColor: '#fff', color: T.ink },
+  input: { height: 42, borderWidth: 1, borderColor: T.sand, borderRadius: 10, paddingHorizontal: 12, fontSize: 15, backgroundColor: '#fff', color: T.ink },
   gemBtn: { height: 42, paddingHorizontal: 18, backgroundColor: T.ink, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   gemBtnText: { color: '#fff', fontSize: 15, fontWeight: '500' },
 });
