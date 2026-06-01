@@ -64,7 +64,7 @@ export default function Index() {
       const d = await res.json();
       if (d.status === 'success') {
         const t = d.data.title || '';
-        const img = d.data.image?.url || d.data.screenshot?.url || '';
+        const img = d.data.image?.url || d.data.logo?.url || d.data.screenshot?.url || '';
         console.log('microlink data:', JSON.stringify(d.data));
         setPendingImg(img);
         if (t) { setTitle(t); setFetchStatus('✓ Titel fundet'); }
