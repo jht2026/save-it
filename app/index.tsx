@@ -121,9 +121,9 @@ export default function Index() {
 
   return (
     <KeyboardAvoidingView
-  style={s.root}
-  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
->
+      style={s.root}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
 
         <View style={s.header}>
@@ -135,7 +135,7 @@ export default function Index() {
             value={search}
             onChangeText={setSearch}
           />
-        </KeyboardAvoidingView>
+        </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.catScroll} contentContainerStyle={s.catRowContent}>
           {Object.entries(cats).map(([k, v]) => (
@@ -256,7 +256,7 @@ export default function Index() {
         </View>
 
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
