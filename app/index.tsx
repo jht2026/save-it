@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import {
-  Alert, KeyboardAvoidingView, Linking,
+  Alert, Image, KeyboardAvoidingView, Linking,
   ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View
 } from 'react-native';
@@ -21,7 +21,7 @@ const CAT_ICONS: Record<string, { name: string; color: string; activeBg: string 
   andet: { name: 'bookmark-outline',      color: '#7B6FA8', activeBg: '#EFECF7' },
 };
 
-type Link = { id: string; url: string; title: string; cat: string; sub: string; note: string; date: string; };
+type Link = { id: string; url: string; title: string; cat: string; sub: string; note: string; date: string; img: string; };
 
 export default function Index() {
   const [links, setLinks] = useState<Link[]>([]);
@@ -31,6 +31,7 @@ export default function Index() {
   const [title, setTitle] = useState('');
   const [note, setNote] = useState('');
   const [fetchStatus, setFetchStatus] = useState('');
+  const [pendingImg, setPendingImg] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editNote, setEditNote] = useState('');
@@ -54,16 +55,20 @@ export default function Index() {
     AsyncStorage.setItem('cats', JSON.stringify(c));
   };
 
-  const fetchTitle = async (rawUrl: string) => {
+  const fetchMeta = async (rawUrl: string) => {
     setFetchStatus('Henter...');
     setTitle('');
+    setPendingImg('');
     try {
-      const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rawUrl)}`);
+      const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(rawUrl)}`);
       const d = await res.json();
-      const m = d.contents?.match(/<title[^>]*>([^<]+)<\/title>/i);
-      const t = m ? m[1].trim().replace(/\s+/g, ' ').slice(0, 90) : '';
-      if (t) { setTitle(t); setFetchStatus('✓ Titel fundet'); }
-      else throw new Error();
+      if (d.status === 'success') {
+        const t = d.data.title || '';
+        const img = d.data.image?.url || d.data.screenshot?.url || '';
+        setPendingImg(img);
+        if (t) { setTitle(t); setFetchStatus('✓ Titel fundet'); }
+        else throw new Error();
+      } else throw new Error();
     } catch {
       const domain = (() => { try { return new URL(rawUrl).hostname.replace('www.', ''); } catch { return ''; } })();
       setTitle(domain);
@@ -76,7 +81,7 @@ export default function Index() {
     setFetchStatus('');
     if (val.length > 8) {
       const full = val.startsWith('http') ? val : 'https://' + val;
-      fetchTitle(full);
+      fetchMeta(full);
     }
   };
 
@@ -89,9 +94,10 @@ export default function Index() {
       id: Date.now().toString(), url: full,
       title: title || full, cat, sub, note,
       date: new Date().toLocaleDateString('da-DK'),
+      img: pendingImg,
     };
     saveLinks([newLink, ...links]);
-    setUrl(''); setTitle(''); setNote(''); setFetchStatus('');
+    setUrl(''); setTitle(''); setNote(''); setFetchStatus(''); setPendingImg('');
   };
 
   const handleDelete = (id: string) => {
@@ -122,10 +128,10 @@ export default function Index() {
 
   return (
     <KeyboardAvoidingView
-  style={s.root}
-  behavior="padding"
-  keyboardVerticalOffset={100}
->
+      style={s.root}
+      behavior="padding"
+      keyboardVerticalOffset={100}
+    >
       <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
 
         <View style={s.header}>
@@ -179,29 +185,30 @@ export default function Index() {
           ? <Text style={s.empty}>Ingen links endnu</Text>
           : filtered.map(l => (
             <View key={l.id} style={s.card}>
+              {l.img ? <Image source={{ uri: l.img }} style={s.cardImg} resizeMode="cover" /> : null}
               {editingId === l.id ? (
                 <View style={s.editBox}>
-  <TextInput style={s.editInput} value={editTitle} onChangeText={setEditTitle} placeholder="Titel" placeholderTextColor="#888" />
-  <TextInput style={s.editInput} value={editNote} onChangeText={setEditNote} placeholder="Note" placeholderTextColor="#888" />
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 4 }}>
-    {Object.entries(cats).map(([k, v]) => (
-      <TouchableOpacity key={k}
-        style={[s.subPill, editCat === k && s.subPillActive]}
-        onPress={() => { setEditCat(k); setEditSub(cats[k].subs[0]); }}>
-        <Text style={[s.subPillText, editCat === k && s.subPillTextActive]}>{v.label}</Text>
-      </TouchableOpacity>
-    ))}
-  </ScrollView>
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 4 }}>
-    {cats[editCat]?.subs.map(sub => (
-      <TouchableOpacity key={sub}
-        style={[s.subPill, editSub === sub && s.subPillActive]}
-        onPress={() => setEditSub(sub)}>
-        <Text style={[s.subPillText, editSub === sub && s.subPillTextActive]}>{sub}</Text>
-      </TouchableOpacity>
-    ))}
-  </ScrollView>
-  <View style={s.editActions}>
+                  <TextInput style={s.editInput} value={editTitle} onChangeText={setEditTitle} placeholder="Titel" placeholderTextColor="#888" />
+                  <TextInput style={s.editInput} value={editNote} onChangeText={setEditNote} placeholder="Note" placeholderTextColor="#888" />
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 4 }}>
+                    {Object.entries(cats).map(([k, v]) => (
+                      <TouchableOpacity key={k}
+                        style={[s.subPill, editCat === k && s.subPillActive]}
+                        onPress={() => { setEditCat(k); setEditSub(cats[k].subs[0]); }}>
+                        <Text style={[s.subPillText, editCat === k && s.subPillTextActive]}>{v.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 4 }}>
+                    {cats[editCat]?.subs.map(sub => (
+                      <TouchableOpacity key={sub}
+                        style={[s.subPill, editSub === sub && s.subPillActive]}
+                        onPress={() => setEditSub(sub)}>
+                        <Text style={[s.subPillText, editSub === sub && s.subPillTextActive]}>{sub}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                  <View style={s.editActions}>
                     <TouchableOpacity style={s.saveBtn} onPress={saveEdit}>
                       <Text style={s.saveBtnText}>Gem ændringer</Text>
                     </TouchableOpacity>
@@ -300,18 +307,19 @@ const s = StyleSheet.create({
   subPillText: { fontSize: 11, color: T.ink2 },
   subPillTextActive: { color: '#fff', fontWeight: '500' },
   addSubInput: { height: 26, paddingHorizontal: 12, borderRadius: 999, borderWidth: 1, borderColor: T.sand, fontSize: 11, color: T.ink3, minWidth: 80 },
-  card: { backgroundColor: '#fff', borderRadius: 14, padding: 14, marginHorizontal: 12, marginBottom: 8 },
-  cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  card: { backgroundColor: '#fff', borderRadius: 14, overflow: 'hidden', marginHorizontal: 12, marginBottom: 8 },
+  cardImg: { width: '100%', height: 160 },
+  cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 14, paddingBottom: 0 },
   cardTitle: { fontSize: 14, fontWeight: '500', color: T.ink, lineHeight: 20 },
   cardDomain: { fontSize: 11, color: T.ink3, marginTop: 2 },
-  cardNote: { fontSize: 13, color: T.ink2, marginTop: 6 },
-  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
+  cardNote: { fontSize: 13, color: T.ink2, marginTop: 6, paddingHorizontal: 14 },
+  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, padding: 14, paddingTop: 0 },
   cardActions: { flexDirection: 'row', gap: 2 },
   iconBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
   badge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
   badgeText: { fontSize: 11, fontWeight: '500', color: T.ink2 },
   cardDate: { fontSize: 11, color: T.ink3 },
-  editBox: { gap: 8 },
+  editBox: { gap: 8, padding: 14 },
   editInput: { height: 34, borderWidth: 1, borderColor: T.border, borderRadius: 8, paddingHorizontal: 10, fontSize: 13, color: T.ink, backgroundColor: T.cream },
   editActions: { flexDirection: 'row', gap: 8 },
   saveBtn: { flex: 1, height: 32, backgroundColor: T.ink, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
