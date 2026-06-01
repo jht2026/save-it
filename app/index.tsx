@@ -56,26 +56,27 @@ export default function Index() {
   };
 
   const fetchMeta = async (rawUrl: string) => {
-    setFetchStatus('Henter...');
-    setTitle('');
-    setPendingImg('');
-    try {
-      const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(rawUrl)}`);
-      const d = await res.json();
-      if (d.status === 'success') {
-        const t = d.data.title || '';
-        const img = d.data.image?.url || d.data.logo?.url || d.data.screenshot?.url || '';
-        console.log('microlink data:', JSON.stringify(d.data));
-        setPendingImg(img);
-        if (t) { setTitle(t); setFetchStatus('✓ Titel fundet'); }
-        else throw new Error();
-      } else throw new Error();
-    } catch {
-      const domain = (() => { try { return new URL(rawUrl).hostname.replace('www.', ''); } catch { return ''; } })();
-      setTitle(domain);
-      setFetchStatus('Skriv titel selv');
-    }
-  };
+  setFetchStatus('Henter...');
+  setTitle('');
+  setPendingImg('');
+  try {
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rawUrl)}`);
+    const d = await res.json();
+    const html = d.contents || '';
+    const titleM = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const imgM = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+              || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+    const t = titleM ? titleM[1].trim().replace(/\s+/g, ' ').slice(0, 90) : '';
+    const img = imgM ? imgM[1] : '';
+    setPendingImg(img);
+    if (t) { setTitle(t); setFetchStatus('✓ Titel fundet'); }
+    else throw new Error();
+  } catch {
+    const domain = (() => { try { return new URL(rawUrl).hostname.replace('www.', ''); } catch { return ''; } })();
+    setTitle(domain);
+    setFetchStatus('Skriv titel selv');
+  }
+};
 
   const handleUrlChange = (val: string) => {
     setUrl(val);
