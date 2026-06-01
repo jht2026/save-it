@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import {
-  Alert, Linking, ScrollView, StyleSheet,
+  Alert, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View
 } from 'react-native';
 
@@ -120,7 +120,10 @@ export default function Index() {
   );
 
   return (
-    <View style={s.root}>
+    <KeyboardAvoidingView
+  style={s.root}
+  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+>
       <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
 
         <View style={s.header}>
@@ -132,7 +135,7 @@ export default function Index() {
             value={search}
             onChangeText={setSearch}
           />
-        </View>
+        </KeyboardAvoidingView>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.catScroll} contentContainerStyle={s.catRowContent}>
           {Object.entries(cats).map(([k, v]) => (
