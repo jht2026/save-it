@@ -2,7 +2,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import {
-  Alert, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet,
+  Alert, KeyboardAvoidingView, Linking,
+  ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View
 } from 'react-native';
 
@@ -121,9 +122,10 @@ export default function Index() {
 
   return (
     <KeyboardAvoidingView
-      style={s.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+  style={s.root}
+  behavior="padding"
+  keyboardVerticalOffset={100}
+>
       <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
 
         <View style={s.header}>
