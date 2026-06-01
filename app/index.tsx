@@ -181,9 +181,27 @@ export default function Index() {
             <View key={l.id} style={s.card}>
               {editingId === l.id ? (
                 <View style={s.editBox}>
-                  <TextInput style={s.editInput} value={editTitle} onChangeText={setEditTitle} placeholder="Titel" placeholderTextColor="#888" />
-                  <TextInput style={s.editInput} value={editNote} onChangeText={setEditNote} placeholder="Note" placeholderTextColor="#888" />
-                  <View style={s.editActions}>
+  <TextInput style={s.editInput} value={editTitle} onChangeText={setEditTitle} placeholder="Titel" placeholderTextColor="#888" />
+  <TextInput style={s.editInput} value={editNote} onChangeText={setEditNote} placeholder="Note" placeholderTextColor="#888" />
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 4 }}>
+    {Object.entries(cats).map(([k, v]) => (
+      <TouchableOpacity key={k}
+        style={[s.subPill, editCat === k && s.subPillActive]}
+        onPress={() => { setEditCat(k); setEditSub(cats[k].subs[0]); }}>
+        <Text style={[s.subPillText, editCat === k && s.subPillTextActive]}>{v.label}</Text>
+      </TouchableOpacity>
+    ))}
+  </ScrollView>
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 4 }}>
+    {cats[editCat]?.subs.map(sub => (
+      <TouchableOpacity key={sub}
+        style={[s.subPill, editSub === sub && s.subPillActive]}
+        onPress={() => setEditSub(sub)}>
+        <Text style={[s.subPillText, editSub === sub && s.subPillTextActive]}>{sub}</Text>
+      </TouchableOpacity>
+    ))}
+  </ScrollView>
+  <View style={s.editActions}>
                     <TouchableOpacity style={s.saveBtn} onPress={saveEdit}>
                       <Text style={s.saveBtnText}>Gem ændringer</Text>
                     </TouchableOpacity>
